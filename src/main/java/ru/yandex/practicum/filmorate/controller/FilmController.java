@@ -1,0 +1,72 @@
+package ru.yandex.practicum.filmorate.controller;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.ValidationExceptionCustom;
+import ru.yandex.practicum.filmorate.model.Film;
+
+import javax.validation.Valid;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
+@Slf4j
+@RestController
+@RequestMapping("/films")
+public class FilmController {
+
+    private final Map<Integer, Film> films = new HashMap<>();
+    private int generateIdFilm = 0;
+
+    @GetMapping
+    public Collection<Film> findAll() {
+        log.debug("Текущее количество пользаков: {}", films.size());
+        return films.values();
+    }
+
+    @PostMapping
+    public Film create(@Valid @RequestBody Film film) {
+        if (films.containsKey(film.getId())) {
+            throw new ValidationExceptionCustom("Фильм с "
+                    + film.getId() + " ид был добавлен ранее.");
+        } else {
+            if (checkReleaseDate(film)) {
+                int filmId = getGenerateIdFilm();
+                film.setId(filmId);
+                films.put(filmId, film);
+                log.debug("Сохранен фильм " + film);
+                return film;
+            } else {
+                throw new ValidationExceptionCustom("Дата позднее 28.12.1895 г.");
+            }
+        }
+    }
+
+    @PutMapping
+    public Film update(@Valid @RequestBody Film film) {
+        int filmId = film.getId();
+        if (films.containsKey(filmId)) {
+            if (checkReleaseDate(film)) {
+                films.put(filmId, film);
+                log.debug("Обновлен фильм " + film);
+                return film;
+            } else {
+                throw new ValidationExceptionCustom("Дата позднее 28.12.1895 г.");
+            }
+        } else {
+            throw new ValidationExceptionCustom("Фильм с таким " +
+                    filmId + " ид отсутствует.");
+        }
+    }
+
+    private boolean checkReleaseDate(Film film) {
+        return film.getReleaseDate().isAfter(
+                LocalDate.of(1895, 12, 28));
+    }
+
+    private int getGenerateIdFilm() {
+        return ++this.generateIdFilm;
+    }
+
+}
