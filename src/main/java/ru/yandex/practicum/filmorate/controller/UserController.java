@@ -2,7 +2,9 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationExceptionCustom;
+import ru.yandex.practicum.filmorate.exception.AlreadyExistsException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.NotValidDataException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import javax.validation.Valid;
@@ -20,21 +22,21 @@ public class UserController {
 
     @GetMapping
     public Collection<User> findAll() {
-        log.debug("Текущее количество пользаков: {}", users.size());
+        log.debug("Текущее количество пользователей: {}", users.size());
         return users.values();
     }
 
     @PostMapping
     public User create(@Valid @RequestBody User user) {
         if (users.containsKey(user.getId())) {
-            throw new ValidationExceptionCustom("Пользак с "
+            throw new AlreadyExistsException("Пользователь с "
                     + user.getId() + " id был добавлен ранее.");
         } else {
-            ifNameIsEmpty(user);
+            fillUserName(user);
             int userId = getGenerateId();
             user.setId(userId);
             users.put(userId, user);
-            log.debug("Сохранен пользак " + user);
+            log.debug("Сохранен пользователь " + user);
             return user;
         }
     }
@@ -43,17 +45,17 @@ public class UserController {
     public User update(@Valid @RequestBody User user) {
         int userId = user.getId();
         if (users.containsKey(userId)) {
-            ifNameIsEmpty(user);
+            fillUserName(user);
             users.put(userId, user);
-            log.debug("Пользак обновлен " + user);
+            log.debug("Пользователь обновлен " + user);
             return user;
         } else {
-            throw new ValidationExceptionCustom("Пользак с такии " + userId +
+            throw new NotFoundException("Пользователь с таким " + userId +
                     " ид отсутствует.");
         }
     }
 
-    private User ifNameIsEmpty(User user) {
+    private User fillUserName(User user) {
         if (user.getName().isBlank()) {
             user.setName(user.getLogin());
         }

@@ -2,7 +2,9 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationExceptionCustom;
+import ru.yandex.practicum.filmorate.exception.AlreadyExistsException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.NotValidDataException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import javax.validation.Valid;
@@ -21,14 +23,14 @@ public class FilmController {
 
     @GetMapping
     public Collection<Film> findAll() {
-        log.debug("Текущее количество пользаков: {}", films.size());
+        log.debug("Текущее количество фильмов: {}", films.size());
         return films.values();
     }
 
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
         if (films.containsKey(film.getId())) {
-            throw new ValidationExceptionCustom("Фильм с "
+            throw new AlreadyExistsException("Фильм с "
                     + film.getId() + " ид был добавлен ранее.");
         } else {
             if (checkReleaseDate(film)) {
@@ -38,7 +40,7 @@ public class FilmController {
                 log.debug("Сохранен фильм " + film);
                 return film;
             } else {
-                throw new ValidationExceptionCustom("Дата позднее 28.12.1895 г.");
+                throw new NotValidDataException("Дата позднее 28.12.1895 г.");
             }
         }
     }
@@ -52,10 +54,10 @@ public class FilmController {
                 log.debug("Обновлен фильм " + film);
                 return film;
             } else {
-                throw new ValidationExceptionCustom("Дата позднее 28.12.1895 г.");
+                throw new NotValidDataException("Дата позднее 28.12.1895 г.");
             }
         } else {
-            throw new ValidationExceptionCustom("Фильм с таким " +
+            throw new NotFoundException("Фильм с таким " +
                     filmId + " ид отсутствует.");
         }
     }
