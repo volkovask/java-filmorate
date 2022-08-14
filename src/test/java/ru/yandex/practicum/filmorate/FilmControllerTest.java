@@ -52,8 +52,8 @@ public class FilmControllerTest {
     public void addNewFilmForIncorrectlyFilledInFields() throws Exception {
         Film film = Film.builder()
                 .id(-1)
-                .name("")
-                .description("")
+                .name("    ")
+                .description("    ")
                 .releaseDate(LocalDate.of(1890, 10, 10))
                 .duration(-1)
                 .build();
