@@ -1,40 +1,44 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 import ru.yandex.practicum.filmorate.exception.AlreadyExistsException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.NotValidDataException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
-import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
 @Service
 public class FilmService {
 
-    private final Map<Integer, Film> films = new HashMap<>();
-    private int generateIdFilm = 0;
+    private final FilmStorage filmStorage;
+    private long generateIdFilm = 0;
+
+    @Autowired
+    public FilmService(FilmStorage filmStorage) {
+        this.filmStorage = filmStorage;
+    }
 
     public Collection<Film> findAll() {
+        Collection<Film> films = filmStorage.getAllFilms();
         log.debug("Текущее количество фильмов: {}", films.size());
-        return films.values();
+        return films;
     }
 
     public Film create(Film film) {
-        if (films.containsKey(film.getId())) {
+        if (filmStorage.isFindFilm(film)) {
             throw new AlreadyExistsException("Фильм с "
                     + film.getId() + " ид был добавлен ранее.");
         } else {
             if (checkReleaseDate(film)) {
-                int filmId = getGenerateIdFilm();
+                long filmId = getGenerateIdFilm();
                 film.setId(filmId);
-                films.put(filmId, film);
+                filmStorage.add(filmId, film);
                 log.debug("Сохранен фильм " + film);
                 return film;
             } else {
@@ -44,10 +48,10 @@ public class FilmService {
     }
 
     public Film update(Film film) {
-        int filmId = film.getId();
-        if (films.containsKey(filmId)) {
+        long filmId = film.getId();
+        if (filmStorage.isFindFilm(film)) {
             if (checkReleaseDate(film)) {
-                films.put(filmId, film);
+                filmStorage.add(filmId, film);
                 log.debug("Обновлен фильм " + film);
                 return film;
             } else {
@@ -59,13 +63,12 @@ public class FilmService {
         }
     }
 
-
     private boolean checkReleaseDate(Film film) {
         return film.getReleaseDate().isAfter(
                 LocalDate.of(1895, 12, 28));
     }
 
-    private int getGenerateIdFilm() {
+    private long getGenerateIdFilm() {
         return ++this.generateIdFilm;
     }
 

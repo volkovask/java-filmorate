@@ -6,7 +6,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
-import java.time.LocalDate;
 import java.util.Collection;
 
 @RestController
@@ -35,9 +34,26 @@ public class FilmController {
         return filmService.update(film);
     }
 
-    private boolean checkReleaseDate(Film film) {
-        return film.getReleaseDate().isAfter(
-                LocalDate.of(1895, 12, 28));
+    @PutMapping("/{id}/like/{userId}")
+    public Film addLikesFilm(@PathVariable("id") Long id,
+                             @PathVariable("userId") Long userId) {
+
+        return null;
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    public Film deleteLikesFilm(@PathVariable("id") Long id,
+                                @PathVariable("userId") Long userId) {
+
+        return null;
+    }
+
+    @GetMapping("/popular")
+    public Collection<Film> getFilmsByCountLikes(
+            @RequestParam(defaultValue = "10", required = false) Integer count
+    ) {
+
+        return null;
     }
 
 }
