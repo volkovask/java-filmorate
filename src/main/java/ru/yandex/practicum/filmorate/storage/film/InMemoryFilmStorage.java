@@ -28,4 +28,9 @@ public class InMemoryFilmStorage implements FilmStorage {
         return films.containsKey(film.getId());
     }
 
+    @Override
+    public Film getFilmById(Long id) {
+        return films.get(id);
+    }
+
 }

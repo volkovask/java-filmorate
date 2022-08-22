@@ -11,23 +11,33 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class FilmService {
 
     private final FilmStorage filmStorage;
+    private final UserService userService;
     private long generateIdFilm = 0;
 
     @Autowired
-    public FilmService(FilmStorage filmStorage) {
+    public FilmService(FilmStorage filmStorage, UserService userService) {
         this.filmStorage = filmStorage;
+        this.userService = userService;
     }
 
     public Collection<Film> findAll() {
         Collection<Film> films = filmStorage.getAllFilms();
         log.debug("Текущее количество фильмов: {}", films.size());
         return films;
+    }
+
+    public Film getFilmById(Long id) {
+        return findFilmById(id);
     }
 
     public Film create(Film film) {
@@ -37,6 +47,7 @@ public class FilmService {
         } else {
             if (checkReleaseDate(film)) {
                 long filmId = getGenerateIdFilm();
+                film.setLikes(createLikesData(film));
                 film.setId(filmId);
                 filmStorage.add(filmId, film);
                 log.debug("Сохранен фильм " + film);
@@ -51,6 +62,7 @@ public class FilmService {
         long filmId = film.getId();
         if (filmStorage.isFindFilm(film)) {
             if (checkReleaseDate(film)) {
+                film.setLikes(createLikesData(film));
                 filmStorage.add(filmId, film);
                 log.debug("Обновлен фильм " + film);
                 return film;
@@ -61,6 +73,68 @@ public class FilmService {
             throw new NotFoundException("Фильм с таким " +
                     filmId + " ид отсутствует.");
         }
+    }
+
+    public Film addLikesFilm(Long filmId, Long userId) {
+        Film film = findFilmById(filmId);
+        userService.findUserById(userId);
+        addLikes(filmId, film, userId);
+        return film;
+    }
+
+    public Film deleteLikesFilm(Long filmId, Long userId) {
+        Film film = findFilmById(filmId);
+        userService.findUserById(userId);
+        deleteLikes(filmId, film, userId);
+        return film;
+    }
+
+    public Collection<Film> getFilmsByCountLikes(Integer count) {
+        return filmStorage
+                .getAllFilms()
+                .stream()
+                .sorted(Comparator.comparing(Film::getRates))
+                .limit(count)
+                .collect(Collectors.toList());
+    }
+
+    private Film addLikes(Long id, Film film, Long userId) {
+        Set<Long> likes = film.getLikes();
+        likes.add(userId);
+        film.setLikes(likes);
+        film.setRates(likes.size());
+        filmStorage.add(id, film);
+        log.debug("Обновлен список лайков у фильма: {}", film);
+        return film;
+    }
+
+    private Film deleteLikes(Long id, Film film, Long userId) {
+        Set<Long> likes = film.getLikes();
+        if (likes.size() != 0) {
+            likes.remove(userId);
+            film.setLikes(likes);
+            film.setRates(likes.size());
+            filmStorage.add(id, film);
+            log.debug("Обновлен список лайков после удаления у фильма: {} ", film);
+        }
+        return film;
+    }
+
+    private Film findFilmById(Long id) {
+        Film film = filmStorage.getFilmById(id);
+        if (film == null) {
+            throw new NotFoundException("Фильм не найден: " + film);
+        }
+        log.debug("Найден фильм: {}", film);
+        return film;
+    }
+
+    private Set<Long> createLikesData(Film film) {
+        Set<Long> likes = film.getLikes();
+        if (likes == null) {
+            likes = new HashSet<>();
+        }
+        return likes;
     }
 
     private boolean checkReleaseDate(Film film) {

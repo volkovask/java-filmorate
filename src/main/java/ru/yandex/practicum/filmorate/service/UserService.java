@@ -8,10 +8,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -32,29 +29,22 @@ public class UserService {
     }
 
     public User getUserById(Long id) {
-        User user = findUserById(id);
-        return user;
+        return findUserById(id);
     }
 
     public Collection<User> getMyFriends(Long id) {
         User user = findUserById(id);
-        Set<Long> friends = user.getFriends();
-        if (friends.size() != 0) {
-            Collection<User> users = new ArrayList<>();
-            for (Long friend : friends) {
-                users.add(userStorage.getUserById(friend));
-            }
-            return users;
-        }
-        return null;
+        Set<Long> friends = getUserFriendData(user);
+        return getUserDataFromId(friends);
     }
 
     public Collection<User> getCommonFriendsOtherUser(Long id, Long otherId) {
         User user = findUserById(id);
         User userFriend = findUserById(otherId);
-
-
-        return null;
+        Set<Long> commonFriends = getUserFriendData(user);
+        Set<Long> friends = getUserFriendData(userFriend);
+        commonFriends.retainAll(friends);
+        return getUserDataFromId(commonFriends);
     }
 
     public User create(User user) {
@@ -64,6 +54,7 @@ public class UserService {
         } else {
             fillUserName(user);
             long userId = getGenerateId();
+            user.setFriends(createFriendsData(user));
             user.setId(userId);
             userStorage.add(userId, user);
             log.debug("Сохранен пользователь: {}", user);
@@ -75,6 +66,7 @@ public class UserService {
         long userId = user.getId();
         if (userStorage.isFindUser(user)) {
             fillUserName(user);
+            user.setFriends(createFriendsData(user));
             userStorage.add(userId, user);
             log.debug("Обновлен пользователь: {}", user);
             return user;
@@ -87,7 +79,7 @@ public class UserService {
     public User addInFriends(Long id, Long friendId) {
         User user = findUserById(id);
         User userFriend = findUserById(friendId);
-        user = addFriend(id, user, friendId);
+        addFriend(id, user, friendId);
         addFriend(friendId, userFriend, id);
         return user;
     }
@@ -95,12 +87,30 @@ public class UserService {
     public User deleteOnFriends(Long id, Long friendId) {
         User user = findUserById(id);
         User userFriend = findUserById(friendId);
-        user = deleteFriend(id, user, friendId);
+        deleteFriend(id, user, friendId);
         deleteFriend(friendId, userFriend, id);
         return user;
     }
 
-    private User findUserById(Long id) {
+    private Set<Long> getUserFriendData(User user) {
+        Set<Long> friends = user.getFriends();
+        if (friends.size() == 0) {
+            log.debug("Список друзей пуст: {}", user);
+        }
+        return friends;
+    }
+
+    private Collection<User> getUserDataFromId(Set<Long> friends) {
+        List<User> users = new ArrayList<>();
+        if (friends.size() != 0) {
+            for (Long id : friends) {
+                users.add(userStorage.getUserById(id));
+            }
+        }
+        return users;
+    }
+
+    public User findUserById(Long id) {
         User user = userStorage.getUserById(id);
         if (user == null) {
             throw new NotFoundException("Пользователь не найден: " + user);
@@ -111,14 +121,19 @@ public class UserService {
 
     private User addFriend(Long id, User user, Long friendId) {
         Set<Long> friends = user.getFriends();
-        if (friends == null) {
-            friends = new HashSet<>();
-        }
         friends.add(friendId);
         user.setFriends(friends);
         userStorage.add(id, user);
         log.debug("Обновлен список друзей у пользователя: {}", user);
         return user;
+    }
+
+    private Set<Long> createFriendsData(User user) {
+        Set<Long> friends = user.getFriends();
+        if (friends == null) {
+            friends = new HashSet<>();
+        }
+        return friends;
     }
 
     private User deleteFriend(Long id, User user, Long friendId) {
@@ -127,7 +142,7 @@ public class UserService {
             friends.remove(friendId);
             user.setFriends(friends);
             userStorage.add(id, user);
-            log.debug("Обновлен список друзей у пользователя: {} после удаления", user);
+            log.debug("Обновлен список друзей после удаления у пользователя: {}", user);
         }
         return user;
     }
