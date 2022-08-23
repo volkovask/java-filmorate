@@ -1,0 +1,89 @@
+
+    public User update(User user) {
+        long userId = user.getId();
+        User userOld = getUserById(userId);
+        fillUserName(user);
+        user.setFriends(userOld.getFriends());
+        userStorage.add(userId, user);
+        log.debug("Обновлен пользователь: {}", user);
+        return user;
+    }
+
+        public User addInFriends(Long id, Long friendId) {
+            if (id == friendId || id <= 0 || friendId <= 0) {
+                throw new NotValidDataException(
+                        "Неверный идентификатор пользователя");
+            }
+            User user = findUserById(id);
+            User userFriend = findUserById(friendId);
+            addFriend(id, user, friendId);
+            addFriend(friendId, userFriend, id);
+            return user;
+        }
+
+
+            @Override
+            public boolean equals(Object o) {
+                if (this == o) return true;
+                if (!(o instanceof User)) return false;
+                User user = (User) o;
+                return id == user.id &&
+                        Objects.equals(friends, user.friends) &&
+                        Objects.equals(email, user.email) &&
+                        Objects.equals(login, user.login) &&
+                        Objects.equals(name, user.name) &&
+                        Objects.equals(birthday, user.birthday);
+            }
+
+            @Override
+            public int hashCode() {
+                return Objects.hash(friends, id, email, login, name, birthday);
+            }
+
+            public Set<Long> getFriends() {
+                return friends;
+            }
+
+            public long getId() {
+                return id;
+            }
+
+            public void setId(long id) {
+                this.id = id;
+            }
+
+            public String getEmail() {
+                return email;
+            }
+
+            public void setEmail(String email) {
+                this.email = email;
+            }
+
+            public String getLogin() {
+                return login;
+            }
+
+            public void setLogin(String login) {
+                this.login = login;
+            }
+
+            public String getName() {
+                return name;
+            }
+
+            public void setName(String name) {
+                this.name = name;
+            }
+
+            public LocalDate getBirthday() {
+                return birthday;
+            }
+
+            public void setBirthday(LocalDate birthday) {
+                this.birthday = birthday;
+            }
+
+            public void setFriends(Set<Long> friends) {
+                this.friends = friends;
+            }

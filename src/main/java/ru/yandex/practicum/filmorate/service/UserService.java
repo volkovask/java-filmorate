@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.AlreadyExistsException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.NotValidDataException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -33,15 +34,13 @@ public class UserService {
     }
 
     public Collection<User> getMyFriends(Long id) {
-        User user = findUserById(id);
-        Set<Long> friends = getUserFriendData(user);
-        return getUserDataFromId(friends);
+        return getUserDataFromId(getUserFriendData(findUserById(id)));
     }
 
     public Collection<User> getCommonFriendsOtherUser(Long id, Long otherId) {
         User user = findUserById(id);
         User userFriend = findUserById(otherId);
-        Set<Long> commonFriends = getUserFriendData(user);
+        Set<Long> commonFriends = new HashSet<>(getUserFriendData(user));
         Set<Long> friends = getUserFriendData(userFriend);
         commonFriends.retainAll(friends);
         return getUserDataFromId(commonFriends);
@@ -64,16 +63,12 @@ public class UserService {
 
     public User update(User user) {
         long userId = user.getId();
-        if (userStorage.isFindUser(user)) {
-            fillUserName(user);
-            user.setFriends(createFriendsData(user));
-            userStorage.add(userId, user);
-            log.debug("Обновлен пользователь: {}", user);
-            return user;
-        } else {
-            throw new NotFoundException("Пользователь с таким " + userId +
-                    " ид отсутствует.");
-        }
+        getUserById(userId);
+        fillUserName(user);
+        user.setFriends(createFriendsData(user));
+        userStorage.add(userId, user);
+        log.debug("Обновлен пользователь: {}", user);
+        return user;
     }
 
     public User addInFriends(Long id, Long friendId) {

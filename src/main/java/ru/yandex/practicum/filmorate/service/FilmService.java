@@ -89,11 +89,11 @@ public class FilmService {
         return film;
     }
 
-    public Collection<Film> getFilmsByCountLikes(Integer count) {
+    public Collection<Film> getFilmsByCountLikes(int count) {
         return filmStorage
                 .getAllFilms()
                 .stream()
-                .sorted(Comparator.comparing(Film::getRates))
+                .sorted(Comparator.comparing(Film::getRates).reversed())
                 .limit(count)
                 .collect(Collectors.toList());
     }
