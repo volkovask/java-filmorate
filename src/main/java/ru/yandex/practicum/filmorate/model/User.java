@@ -6,15 +6,14 @@ import lombok.Data;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.PastOrPresent;
+import javax.validation.constraints.Pattern;
 import java.time.LocalDate;
-import java.util.Set;
 
 @Data
 @Builder
 public class User {
 
-    private Set<Long> friends;
-    private long id;
+    private int id;
     @Email(message = "Неверно заполнен формат email.")
     private String email;
     @NotBlank(message = "Логин не должен быть пустым и не должен содержать пробелы.")
