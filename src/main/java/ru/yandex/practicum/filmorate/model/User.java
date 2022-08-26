@@ -7,12 +7,14 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.PastOrPresent;
 import java.time.LocalDate;
+import java.util.Set;
 
 @Data
 @Builder
 public class User {
 
-    private int id;
+    private Set<Long> friends;
+    private long id;
     @Email(message = "Неверно заполнен формат email.")
     private String email;
     @NotBlank(message = "Логин не должен быть пустым и не должен содержать пробелы.")
