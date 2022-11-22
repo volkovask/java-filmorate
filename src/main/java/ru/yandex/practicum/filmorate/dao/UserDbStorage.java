@@ -11,6 +11,7 @@ import java.util.Collection;
 public class UserDbStorage implements UserStorage {
 
     private final JdbcTemplate jdbcTemplate;
+    private static String sql;
 
     public UserDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -23,7 +24,13 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User add(long userId, User user) {
-        return null;
+        sql = "INSERT INTO USERS (email, login, name , birthday) values (?, ?, ?, ?)";
+        jdbcTemplate.update(sql,
+                user.getEmail(),
+                user.getLogin(),
+                user.getName(),
+                user.getBirthday());
+        return user;
     }
 
     @Override

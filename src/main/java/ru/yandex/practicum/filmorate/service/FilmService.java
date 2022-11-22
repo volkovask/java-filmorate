@@ -37,8 +37,17 @@ public class FilmService {
         return films;
     }
 
-    public Film getFilmById(Long id) {
-        return findFilmById(id);
+    public Film getFilmByIdIn(Long id) {
+        Film film = new Film();
+        film = filmStorage.getFilmById(id);
+        if (film == null) {
+            throw new NotFoundException("Фильм не найден: " + film);
+        }
+        log.debug("Найден фильм: {}", film);
+        return film;
+
+
+//        return findFilmById(id);
     }
 
     public Film create(Film film) {
@@ -94,7 +103,7 @@ public class FilmService {
         return filmStorage
                 .getAllFilms()
                 .stream()
-                .sorted(Comparator.comparing(Film::getRates).reversed())
+                .sorted(Comparator.comparing(Film::getRate).reversed())
                 .limit(count)
                 .collect(Collectors.toList());
     }
@@ -103,7 +112,7 @@ public class FilmService {
         Set<Long> likes = film.getLikes();
         likes.add(userId);
         film.setLikes(likes);
-        film.setRates(likes.size());
+        film.setRate(likes.size());
         filmStorage.add(id, film);
         log.debug("Обновлен список лайков у фильма: {}", film);
         return film;
@@ -114,7 +123,7 @@ public class FilmService {
         if (likes.size() != 0) {
             likes.remove(userId);
             film.setLikes(likes);
-            film.setRates(likes.size());
+            film.setRate(likes.size());
             filmStorage.add(id, film);
             log.debug("Обновлен список лайков после удаления у фильма: {} ", film);
         }

@@ -1,0 +1,8 @@
+/**
+* Get film by id = 1
+*/
+
+SELECT *
+FROM FILMS
+WHERE ID = 1;
+
