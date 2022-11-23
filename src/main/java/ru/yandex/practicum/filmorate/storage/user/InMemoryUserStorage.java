@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -8,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
+@Qualifier("inMemoryUserStorage")
 public class InMemoryUserStorage implements UserStorage {
 
     private final Map<Long, User> users = new HashMap<>();
@@ -18,9 +20,14 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User add(long userId, User user) {
-        users.put(userId, user);
+    public User add(User user) {
+        users.put(user.getId(), user);
         return user;
+    }
+
+    @Override
+    public User update(User user) {
+    return add(user);
     }
 
     @Override

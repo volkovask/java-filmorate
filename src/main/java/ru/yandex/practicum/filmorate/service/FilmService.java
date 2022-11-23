@@ -11,10 +11,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -23,7 +20,6 @@ public class FilmService {
 
     private final FilmStorage filmStorage;
     private final UserService userService;
-    private long generateIdFilm = 0;
 
     @Autowired
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage, UserService userService) {
@@ -37,17 +33,13 @@ public class FilmService {
         return films;
     }
 
-    public Film getFilmByIdIn(Long id) {
-        Film film = new Film();
-        film = filmStorage.getFilmById(id);
+    public Film getFilmById(Long id) {
+        Film film = filmStorage.getFilmById(id);
         if (film == null) {
             throw new NotFoundException("Фильм не найден: " + film);
         }
         log.debug("Найден фильм: {}", film);
         return film;
-
-
-//        return findFilmById(id);
     }
 
     public Film create(Film film) {
@@ -56,10 +48,8 @@ public class FilmService {
                     + film.getId() + " ид был добавлен ранее.");
         } else {
             if (checkReleaseDate(film)) {
-                long filmId = getGenerateIdFilm();
                 film.setLikes(createLikesData(film));
-                film.setId(filmId);
-                filmStorage.add(filmId, film);
+                filmStorage.add(film);
                 log.debug("Сохранен фильм " + film);
                 return film;
             } else {
@@ -73,7 +63,7 @@ public class FilmService {
         if (filmStorage.isFindFilm(film)) {
             if (checkReleaseDate(film)) {
                 film.setLikes(createLikesData(film));
-                filmStorage.add(filmId, film);
+                filmStorage.update(film);
                 log.debug("Обновлен фильм " + film);
                 return film;
             } else {
@@ -113,7 +103,7 @@ public class FilmService {
         likes.add(userId);
         film.setLikes(likes);
         film.setRate(likes.size());
-        filmStorage.add(id, film);
+        filmStorage.add(film);
         log.debug("Обновлен список лайков у фильма: {}", film);
         return film;
     }
@@ -124,7 +114,7 @@ public class FilmService {
             likes.remove(userId);
             film.setLikes(likes);
             film.setRate(likes.size());
-            filmStorage.add(id, film);
+            filmStorage.add(film);
             log.debug("Обновлен список лайков после удаления у фильма: {} ", film);
         }
         return film;
@@ -150,10 +140,6 @@ public class FilmService {
     private boolean checkReleaseDate(Film film) {
         return film.getReleaseDate().isAfter(
                 LocalDate.of(1895, 12, 28));
-    }
-
-    private long getGenerateIdFilm() {
-        return ++this.generateIdFilm;
     }
 
 }

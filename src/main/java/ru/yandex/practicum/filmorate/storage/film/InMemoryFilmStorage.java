@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
-@Qualifier("filmInMemoryStorage")
+@Qualifier("inMemoryFilmStorage")
 public class InMemoryFilmStorage implements FilmStorage {
 
     private final Map<Long, Film> films = new HashMap<>();
@@ -20,9 +20,14 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film add(long filmId, Film film) {
-        films.put(filmId, film);
+    public Film add(Film film) {
+        films.put(film.getId(), film);
         return film;
+    }
+
+    @Override
+    public Film update(Film film) {
+        return add(film);
     }
 
     @Override

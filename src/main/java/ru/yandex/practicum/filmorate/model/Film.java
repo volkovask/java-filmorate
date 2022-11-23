@@ -1,16 +1,12 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
-import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Data
@@ -31,6 +27,6 @@ public class Film {
     private int duration;
     private int rate;
     private Mpa mpa;
-    LinkedHashSet<Genre> genres;
+    Set<Genre> genres;
 
 }

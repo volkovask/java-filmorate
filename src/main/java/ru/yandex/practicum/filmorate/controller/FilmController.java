@@ -1,19 +1,12 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.AlreadyExistsException;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.NotValidDataException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
-import java.time.LocalDate;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/films")
@@ -34,7 +27,7 @@ public class FilmController {
     @GetMapping("/{id}")
     public Film getFilmById(
             @PathVariable("id") Long id) {
-        return filmService.getFilmByIdIn(id);
+        return filmService.getFilmById(id);
     }
 
     @PostMapping

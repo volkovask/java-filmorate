@@ -57,7 +57,7 @@ public class UserService {
             long userId = getGenerateId();
             user.setFriends(createFriendsData(user));
             user.setId(userId);
-            userStorage.add(userId, user);
+            userStorage.add(user);
             log.debug("Сохранен пользователь: {}", user);
             return user;
         }
@@ -68,7 +68,7 @@ public class UserService {
         getUserById(userId);
         fillUserName(user);
         user.setFriends(createFriendsData(user));
-        userStorage.add(userId, user);
+        userStorage.update(user);
         log.debug("Обновлен пользователь: {}", user);
         return user;
     }
@@ -120,7 +120,7 @@ public class UserService {
         Set<Long> friends = user.getFriends();
         friends.add(friendId);
         user.setFriends(friends);
-        userStorage.add(id, user);
+        userStorage.add(user);
         log.debug("Обновлен список друзей у пользователя: {}", user);
         return user;
     }
@@ -138,7 +138,7 @@ public class UserService {
         if (friends.size() != 0) {
             friends.remove(friendId);
             user.setFriends(friends);
-            userStorage.add(id, user);
+            userStorage.add(user);
             log.debug("Обновлен список друзей после удаления у пользователя: {}", user);
         }
         return user;
