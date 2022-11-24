@@ -11,10 +11,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.sql.PreparedStatement;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Component
 @Qualifier("userDbStorage")
@@ -24,13 +21,21 @@ public class UserDbStorage implements UserStorage {
     private static final int FIRST_INDEX = 0;
     private final static String SQL_QUERY_INSERT = "INSERT INTO USERS " +
             "(email, login, name , birthday)" +
-            "values(?, ?, ?, ?)";
+            "VALUES (?, ?, ?, ?)";
     private final static String SQL_QUERY_UPDATE = "UPDATE USERS SET " +
             "email = ?, login =?, name = ?, birthday = ? " +
             "WHERE ID = ?";
     private final static String SQL_QUERY_SELECT_ALL = "SELECT * FROM USERS";
     private final static String SQL_QUERY_SELECT_ID = "SELECT * FROM USERS WHERE ID = ?";
-
+    private final static String SQL_QUERY_INSERT_FRIEND = "INSERT INTO USER_FRIENDS " +
+            "(user_ID, friend_ID) VALUES (?, ?)";
+    private final static String SQL_QUERY_DELETE_FRIEND = "DELETE FROM USER_FRIENDS " +
+            "WHERE user_ID = ? AND friend_ID = ?";
+    private final static String SQL_QUERY_SELECT_FRIENDS = "SELECT * FROM USERS " +
+            "WHERE ID IN (SELECT friend_ID FROM USER_FRIENDS WHERE user_ID = ? )";
+    private final static String SQL_QUERY_SELECT_COMMON_FRIENDS = "SELECT * FROM " +
+            "USERS WHERE ID IN (SELECT friend_ID FROM USER_FRIENDS WHERE user_ID = ?) AND " +
+            "ID IN (SELECT friend_ID FROM USER_FRIENDS WHERE user_ID = ?)";
 
     public UserDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -87,4 +92,27 @@ public class UserDbStorage implements UserStorage {
         }
         return users.get(FIRST_INDEX);
     }
+
+    @Override
+    public void addFriend(Long id, Long friendId) {
+        jdbcTemplate.update(SQL_QUERY_INSERT_FRIEND, id, friendId);
+    }
+
+    @Override
+    public void deleteFriend(Long id, Long friendId) {
+        jdbcTemplate.update(SQL_QUERY_DELETE_FRIEND, id, friendId);
+    }
+
+    @Override
+    public Collection<User> getMyFriends(Long id) {
+        return jdbcTemplate.query(SQL_QUERY_SELECT_FRIENDS,
+                UserStorageUtils::makeUser, id);
+    }
+
+    @Override
+    public Collection<User> getCommonFriendsOtherUser(Long id, Long otherId) {
+        return jdbcTemplate.query(SQL_QUERY_SELECT_COMMON_FRIENDS,
+                UserStorageUtils::makeUser, id, otherId);
+    }
+
 }

@@ -9,7 +9,6 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -27,14 +26,14 @@ public class MpaDbStorage implements MpaStorage {
 
     @Override
     public Collection<Mpa> getAllMpa() {
-        return Collections.singleton(jdbcTemplate.queryForObject(
-                SQL_QUERY_SELECT_ALL, MpaStorageUtils::makeMpa));
+        return jdbcTemplate.query(
+                SQL_QUERY_SELECT_ALL, MpaStorageUtils::makeMpa);
     }
 
     @Override
     public Mpa getMpaById(Long id) {
         List<Mpa> mpas = jdbcTemplate.query(SQL_QUERY_SELECT_ID,
-                MpaStorageUtils::makeMpa);
+                MpaStorageUtils::makeMpa, id);
         if (mpas.size() != 1) {
             throw new NotFoundException("Рейтинг с таким " +
                     id + " ид отсутствует.");

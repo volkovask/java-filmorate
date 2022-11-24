@@ -12,7 +12,6 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.sql.PreparedStatement;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -24,13 +23,24 @@ public class FilmDbStorage implements FilmStorage {
     private static final int FIRST_INDEX = 0;
     private final static String SQL_QUERY_INSERT = "INSERT INTO FILMS " +
             "(name, release_date, description, duration, rate, mpa_id)" +
-            "values(?, ?, ?, ?, ?, ?)";
+            "VALUES (?, ?, ?, ?, ?, ?)";
     private final static String SQL_QUERY_UPDATE = "UPDATE FILMS SET " +
             "name = ?, release_date =?, description = ?, duration = ?, " +
             "rate = ?, mpa_id = ? " +
             "WHERE ID = ?";
     private final static String SQL_QUERY_SELECT_ALL = "SELECT * FROM FILMS";
     private final static String SQL_QUERY_SELECT_ID = "SELECT * FROM FILMS WHERE ID = ?";
+    private final static String SQL_QUERY_INSERT_LIKES = "INSERT INTO FILM_LIKES " +
+            "(film_ID, user_ID) VALUES (?, ?)";
+    private final static String SQL_QUERY_DELETE_LIKES = "DELETE FROM FILM_LIKES " +
+            "WHERE film_ID = ? AND user_ID = ?";
+    private final static String SQL_QUERY_SELECT_TOP_FILMS = "SELECT TOP ? f.ID, " +
+            "f.name, f.release_date, f.description, f.duration, f.rate, " +
+            "m.name AS MPA_name FROM FILMS AS f " +
+            "LEFT JOIN MPA AS m ON f.mpa_ID = m.ID " +
+            "LEFT JOIN FILM_LIKES AS l ON f.ID = l.film_ID " +
+            "GROUP BY f.ID " +
+            "ORDER BY COUNT(l.film_ID) DESC";
 
     public FilmDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -38,8 +48,8 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Collection<Film> getAllFilms() {
-        return Collections.singleton(jdbcTemplate.queryForObject(SQL_QUERY_SELECT_ALL,
-                FilmStorageUtils::makeFilm));
+        return jdbcTemplate.query(SQL_QUERY_SELECT_ALL,
+                FilmStorageUtils::makeFilm);
     }
 
     @Override
@@ -90,6 +100,24 @@ public class FilmDbStorage implements FilmStorage {
                     id + " ид отсутствует.");
         }
         return films.get(FIRST_INDEX);
+    }
+
+    @Override
+    public Film addLikes(Long id, Film film, Long userId) {
+        jdbcTemplate.update(SQL_QUERY_INSERT_LIKES, id, userId);
+        return film;
+    }
+
+    @Override
+    public Film deleteLikes(Long id, Film film, Long userId) {
+        jdbcTemplate.update(SQL_QUERY_DELETE_LIKES, id, userId);
+        return film;
+    }
+
+    @Override
+    public Collection<Film> getFilmsByCountLikes(int count) {
+        return jdbcTemplate.query(SQL_QUERY_SELECT_TOP_FILMS,
+                FilmStorageUtils::makeFilm, count);
     }
 
 }

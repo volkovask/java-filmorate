@@ -34,11 +34,7 @@ public class FilmService {
     }
 
     public Film getFilmById(Long id) {
-        Film film = filmStorage.getFilmById(id);
-        if (film == null) {
-            throw new NotFoundException("Фильм не найден: " + film);
-        }
-        log.debug("Найден фильм: {}", film);
+        Film film = findFilmById(id);
         return film;
     }
 
@@ -78,49 +74,24 @@ public class FilmService {
     public Film addLikesFilm(Long filmId, Long userId) {
         Film film = findFilmById(filmId);
         userService.findUserById(userId);
-        addLikes(filmId, film, userId);
+        film = filmStorage.addLikes(filmId, film, userId);
+        log.debug("Обновлен список лайков у фильма: {}", film);
         return film;
     }
 
     public Film deleteLikesFilm(Long filmId, Long userId) {
         Film film = findFilmById(filmId);
         userService.findUserById(userId);
-        deleteLikes(filmId, film, userId);
+        film = filmStorage.deleteLikes(filmId, film, userId);
+        log.debug("Обновлен список лайков после удаления у фильма: {} ", film);
         return film;
     }
 
     public Collection<Film> getFilmsByCountLikes(int count) {
-        return filmStorage
-                .getAllFilms()
-                .stream()
-                .sorted(Comparator.comparing(Film::getRate).reversed())
-                .limit(count)
-                .collect(Collectors.toList());
+        return filmStorage.getFilmsByCountLikes(count);
     }
 
-    private Film addLikes(Long id, Film film, Long userId) {
-        Set<Long> likes = film.getLikes();
-        likes.add(userId);
-        film.setLikes(likes);
-        film.setRate(likes.size());
-        filmStorage.add(film);
-        log.debug("Обновлен список лайков у фильма: {}", film);
-        return film;
-    }
-
-    private Film deleteLikes(Long id, Film film, Long userId) {
-        Set<Long> likes = film.getLikes();
-        if (likes.size() != 0) {
-            likes.remove(userId);
-            film.setLikes(likes);
-            film.setRate(likes.size());
-            filmStorage.add(film);
-            log.debug("Обновлен список лайков после удаления у фильма: {} ", film);
-        }
-        return film;
-    }
-
-    private Film findFilmById(Long id) {
+    public Film findFilmById(Long id) {
         Film film = filmStorage.getFilmById(id);
         if (film == null) {
             throw new NotFoundException("Фильм не найден: " + film);

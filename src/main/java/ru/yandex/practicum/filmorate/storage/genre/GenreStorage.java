@@ -10,4 +10,10 @@ public interface GenreStorage {
 
     Genre getGenreById(Long id);
 
+    void addGenreToFilm(Long filmId, Long genreId);
+
+    void deleteGenreToFilm(Long filmId, Long genreId);
+
+    Collection<Genre> getGenresForFilm(Long filmId);
+
 }
