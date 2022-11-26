@@ -1,8 +1,10 @@
 package ru.yandex.practicum.filmorate.dao;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.utils.GenreStorageUtils;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -12,23 +14,26 @@ import java.util.Collection;
 import java.util.List;
 
 @Component
+@Repository
 @Qualifier("genreDbStorage")
 public class GenreDbStorage implements GenreStorage {
 
     private final JdbcTemplate jdbcTemplate;
     private static final int FIRST_INDEX = 0;
     private final static String SQL_QUERY_SELECT_ALL = "SELECT * FROM GENRE";
-    private final static String SQL_QUERY_SELECT_ID = "SELECT * FROM GENRE WHERE ID = ?";
+    private final static String SQL_QUERY_SELECT_ID = "SELECT * FROM GENRE WHERE genre_ID = ?";
     private final static String SQL_QUERY_INSERT_GENRE = "INSERT INTO FILM_GENRE " +
             "(film_ID, genre_ID) VALUES (?, ?)";
     private final static String SQL_QUERY_DELETE_GENRE = "DELETE FROM FILM_GENRE " +
             "WHERE film_ID = ? AND genre_ID = ?";
-    private final static String SQL_QUERY_SELECT_GENRES = "SELECT " +
-            "g.genre_ID, ge.name " +
-            "FROM FILM_GENRE AS g " +
-            "LEFT JOIN GENRE AS ge ON g.genre_ID = ge.ID WHERE film_ID = ? " +
-            "GROUP BY g.genre_ID";
+    private static final String SQL_QUERY_SELECT_GENRES = "SELECT " +
+            "GENRE.GENRE_ID AS id, GENRE.GENRE_NAME AS name " +
+            "FROM FILM_GENRE " +
+            "LEFT JOIN GENRE ON FILM_GENRE.GENRE_ID = GENRE.GENRE_ID " +
+            "WHERE FILM_GENRE.FILM_ID = ? " +
+            "ORDER BY GENRE.GENRE_ID ASC";
 
+    @Autowired
     public GenreDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
@@ -61,10 +66,9 @@ public class GenreDbStorage implements GenreStorage {
     }
 
     @Override
-    public Collection<Genre> getGenresForFilm(Long filmId) {
+    public List<Genre> getGenresForFilm(Long filmId) {
         return jdbcTemplate.query(SQL_QUERY_SELECT_GENRES,
                 GenreStorageUtils::makeGenre, filmId);
     }
-
 
 }

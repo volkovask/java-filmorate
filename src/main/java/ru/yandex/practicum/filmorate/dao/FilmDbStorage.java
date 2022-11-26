@@ -1,10 +1,12 @@
 package ru.yandex.practicum.filmorate.dao;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.utils.FilmStorageUtils;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -16,6 +18,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Component
+@Repository
 @Qualifier("filmDbStorage")
 public class FilmDbStorage implements FilmStorage {
 
@@ -28,20 +31,33 @@ public class FilmDbStorage implements FilmStorage {
             "name = ?, release_date =?, description = ?, duration = ?, " +
             "rate = ?, mpa_id = ? " +
             "WHERE ID = ?";
-    private final static String SQL_QUERY_SELECT_ALL = "SELECT * FROM FILMS";
-    private final static String SQL_QUERY_SELECT_ID = "SELECT * FROM FILMS WHERE ID = ?";
+    private final static String SQL_QUERY_SELECT_ALL = "SELECT f.ID, " +
+            "f.name, f.duration, f.description, " +
+            "f.release_date, f.rate, f.mpa_ID, " +
+            "m.mpa_ID, m.mpa_name " +
+            "FROM FILMS AS f " +
+            "LEFT JOIN MPA AS m ON f.mpa_ID = m.mpa_ID ";
+    private final static String SQL_QUERY_SELECT_ID = "SELECT f.ID, " +
+            "f.name, f.release_date, f.description, f.duration, " +
+            "f.rate, f.mpa_ID, m.mpa_ID, m.mpa_name " +
+            "FROM FILMS AS f " +
+            "LEFT JOIN MPA AS m ON f.mpa_ID = m.mpa_ID " +
+            "WHERE f.ID = ?";
+
     private final static String SQL_QUERY_INSERT_LIKES = "INSERT INTO FILM_LIKES " +
             "(film_ID, user_ID) VALUES (?, ?)";
     private final static String SQL_QUERY_DELETE_LIKES = "DELETE FROM FILM_LIKES " +
             "WHERE film_ID = ? AND user_ID = ?";
     private final static String SQL_QUERY_SELECT_TOP_FILMS = "SELECT TOP ? f.ID, " +
             "f.name, f.release_date, f.description, f.duration, f.rate, " +
-            "m.name AS MPA_name FROM FILMS AS f " +
-            "LEFT JOIN MPA AS m ON f.mpa_ID = m.ID " +
+            "f.mpa_ID, m.mpa_ID, m.mpa_name " +
+            "FROM FILMS AS f " +
+            "LEFT JOIN MPA AS m ON f.mpa_ID = m.mpa_ID " +
             "LEFT JOIN FILM_LIKES AS l ON f.ID = l.film_ID " +
             "GROUP BY f.ID " +
             "ORDER BY COUNT(l.film_ID) DESC";
 
+    @Autowired
     public FilmDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
@@ -66,7 +82,8 @@ public class FilmDbStorage implements FilmStorage {
             stm.setLong(6, film.getMpa().getId());
             return stm;
         }, keyHolder);
-        film.setId(Objects.requireNonNull(keyHolder.getKey()).longValue());
+        long id = Objects.requireNonNull(keyHolder.getKey()).longValue();
+        film.setId(id);
         return film;
     }
 
@@ -80,7 +97,7 @@ public class FilmDbStorage implements FilmStorage {
                 film.getRate(),
                 film.getMpa().getId(),
                 film.getId());
-        return film;
+        return getFilmById(film.getId());
     }
 
     @Override

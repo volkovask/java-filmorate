@@ -14,12 +14,9 @@ import java.util.Collection;
 public class GenreService {
 
     private final GenreStorage genreStorage;
-    private final FilmService filmService;
 
-    public GenreService(@Qualifier("genreDbStorage") GenreStorage genreStorage,
-                        FilmService filmService) {
+    public GenreService(@Qualifier("genreDbStorage") GenreStorage genreStorage) {
         this.genreStorage = genreStorage;
-        this.filmService = filmService;
     }
 
     public Collection<Genre> findAll() {
@@ -38,19 +35,16 @@ public class GenreService {
     }
 
     public void addGenreToFilm(Long filmId, Long genreId) {
-        filmService.findFilmById(filmId);
         getGenreById(genreId);
         genreStorage.addGenreToFilm(filmId, genreId);
     }
 
     public void deleteGenreToFilm(Long filmId, Long genreId) {
-        filmService.findFilmById(filmId);
         getGenreById(genreId);
         genreStorage.deleteGenreToFilm(filmId, genreId);
     }
 
     public Collection<Genre> getGenresForFilm(Long filmId) {
-        filmService.findFilmById(filmId);
         return getGenresForFilm(filmId);
     }
 

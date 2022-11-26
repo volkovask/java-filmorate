@@ -4,6 +4,7 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Set;
 
 public class UserStorageUtils {
 
@@ -11,13 +12,14 @@ public class UserStorageUtils {
     }
 
     public static User makeUser(ResultSet resultSet, int rowNum) throws SQLException {
-        User user = new User();
-        user.setId(resultSet.getLong("id"));
-        user.setEmail(resultSet.getString("email"));
-        user.setLogin(resultSet.getString("login"));
-        user.setName(resultSet.getString("name"));
-        user.setBirthday(resultSet.getDate("birthday").toLocalDate());
-        return user;
+        return User.builder()
+                .id(resultSet.getLong("id"))
+                .email(resultSet.getString("email"))
+                .login(resultSet.getString("login"))
+                .name(resultSet.getString("name"))
+                .birthday(resultSet.getDate("birthday").toLocalDate())
+                .friends(Set.of())
+                .build();
     }
 
 }

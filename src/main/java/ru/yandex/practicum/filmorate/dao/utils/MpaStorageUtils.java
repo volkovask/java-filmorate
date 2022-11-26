@@ -12,8 +12,8 @@ public class MpaStorageUtils {
 
     public static Mpa makeMpa(ResultSet resultSet, int rowNum) throws SQLException {
         Mpa mpa = new Mpa();
-        mpa.setId(resultSet.getLong("id"));
-        mpa.setName(resultSet.getString("name"));
+        mpa.setId(resultSet.getLong("mpa_id"));
+        mpa.setName(resultSet.getString("mpa_name"));
         return mpa;
     }
 

@@ -1,10 +1,12 @@
 package ru.yandex.practicum.filmorate.dao;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.utils.UserStorageUtils;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -14,6 +16,7 @@ import java.sql.PreparedStatement;
 import java.util.*;
 
 @Component
+@Repository
 @Qualifier("userDbStorage")
 public class UserDbStorage implements UserStorage {
 
@@ -31,12 +34,14 @@ public class UserDbStorage implements UserStorage {
             "(user_ID, friend_ID) VALUES (?, ?)";
     private final static String SQL_QUERY_DELETE_FRIEND = "DELETE FROM USER_FRIENDS " +
             "WHERE user_ID = ? AND friend_ID = ?";
-    private final static String SQL_QUERY_SELECT_FRIENDS = "SELECT * FROM USERS " +
-            "WHERE ID IN (SELECT friend_ID FROM USER_FRIENDS WHERE user_ID = ? )";
+    private final static String SQL_QUERY_SELECT_FRIENDS = "SELECT * " +
+            "FROM USERS WHERE ID IN " +
+            "(SELECT friend_ID FROM USER_FRIENDS WHERE user_ID = ? )";
     private final static String SQL_QUERY_SELECT_COMMON_FRIENDS = "SELECT * FROM " +
             "USERS WHERE ID IN (SELECT friend_ID FROM USER_FRIENDS WHERE user_ID = ?) AND " +
             "ID IN (SELECT friend_ID FROM USER_FRIENDS WHERE user_ID = ?)";
 
+    @Autowired
     public UserDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
