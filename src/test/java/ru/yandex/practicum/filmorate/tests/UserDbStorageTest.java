@@ -10,7 +10,6 @@ import org.springframework.test.context.jdbc.Sql;
 import ru.yandex.practicum.filmorate.dao.UserDbStorage;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.Collection;
 import java.util.Optional;
 
 @SpringBootTest
@@ -23,7 +22,7 @@ public class UserDbStorageTest {
 
 
     @Test()
-    @DisplayName("Вывода всех пользователей из БД. Ожидание 1")
+    @DisplayName("Вывод пользователей из БД по ID.")
     @Sql({"classpath:table.sql", "classpath:data_table.sql"})
     void getUserByIdTest() {
             Optional<User> usersOne = Optional.ofNullable(userDbStorage.getUserById(1L));
