@@ -1,18 +1,18 @@
 /**
-* Get film by id = 1
+* Select film by id = 1
 */
 
 SELECT *
 FROM FILMS
 WHERE ID = 1;
 
-"SELECT f.ID, " +
-            "f.name, f.release_date, f.description, f.duration, " +
-            "f.rate, f.mpa_ID, m.mpa_ID, m.mpa_name, " +
-            "fg.genre_ID, g.genre_name " +
-            "FROM FILMS AS f " +
-            "LEFT JOIN MPA AS m ON f.mpa_ID = m.mpa_ID " +
-            "LEFT JOIN FILM_GENRE AS fg on f.ID = FG.film_ID " +
-            "LEFT JOIN GENRE g on fg.genre_ID = g.genre_ID " +
-            "WHERE f.ID = ?";
+SELECT f.ID,
+       f.name, f.release_date, f.description, f.duration,
+       f.rate, f.mpa_ID, m.mpa_ID, m.mpa_name,
+       fg.genre_ID, g.genre_name
+       FROM FILMS AS f
+       LEFT JOIN MPA AS m ON f.mpa_ID = m.mpa_ID
+       LEFT JOIN FILM_GENRE AS fg on f.ID = FG.film_ID
+       LEFT JOIN GENRE g on fg.genre_ID = g.genre_ID
+       WHERE f.ID = 1;
 

@@ -67,8 +67,13 @@ public class GenreDbStorage implements GenreStorage {
 
     @Override
     public List<Genre> getGenresForFilm(Long filmId) {
-        return jdbcTemplate.query(SQL_QUERY_SELECT_GENRES,
+        List<Genre> genres = jdbcTemplate.query(SQL_QUERY_SELECT_GENRES,
                 GenreStorageUtils::makeGenre, filmId);
+        if (genres == null) {
+            throw new NotFoundException("Жанр отсутствует для фильма с таким " +
+                    filmId + " ид отсутствует.");
+        }
+        return genres;
     }
 
 }

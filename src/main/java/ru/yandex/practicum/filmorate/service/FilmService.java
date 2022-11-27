@@ -46,8 +46,7 @@ public class FilmService {
                     + film.getId() + " ид был добавлен ранее.");
         } else {
             if (checkReleaseDate(film)) {
-                //film.setLikes(createLikesData(film));
-                film.setLikes(Set.of());
+                film.setLikes(createLikesData(film));
                 filmStorage.add(sortGenreData(film));
                 createGenreData(film);
                 log.debug("Сохранен фильм " + film);
@@ -62,8 +61,7 @@ public class FilmService {
         long filmId = film.getId();
         if (filmStorage.isFindFilm(film)) {
             if (checkReleaseDate(film)) {
-                //film.setLikes(createLikesData(film));
-                film.setLikes(Set.of());
+                film.setLikes(createLikesData(film));
                 deleteGenreData(film);
                 filmStorage.update(sortGenreData(film));
                 createGenreData(film);

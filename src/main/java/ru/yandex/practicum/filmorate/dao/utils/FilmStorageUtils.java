@@ -16,7 +16,7 @@ public class FilmStorageUtils {
     private static GenreStorage genreStorage;
 
     private FilmStorageUtils(GenreStorage genreStorage) {
-        this.genreStorage = genreStorage;
+        FilmStorageUtils.genreStorage = genreStorage;
     }
 
     public static Film makeFilm(ResultSet resultSet, int rowNum) throws SQLException {
@@ -32,16 +32,21 @@ public class FilmStorageUtils {
                         .name(resultSet.getString("mpa_name"))
                         .build())
                 .build();
-        long id = film.getId();
-        film.setGenres(sortedGenre(genreStorage.getGenresForFilm(id)));
+        film.setGenres(sortedGenre(film.getId()));
         return film;
     }
 
-    private static Set<Genre> sortedGenre(List<Genre> genres) {
+    private static Set<Genre> sortedGenre(Long id) {
+        Optional<List<Genre>> genres =
+                Optional.ofNullable(genreStorage.getGenresForFilm(id));
+        if (genres.isPresent()) {
             Set<Genre> genresSort =
                     new TreeSet<>(Comparator.comparing(Genre::getId));
-            genresSort.addAll(genres);
+            genresSort.addAll(genres.get());
             return genresSort;
+        } else {
+            return Set.of();
+        }
     }
 
 }
