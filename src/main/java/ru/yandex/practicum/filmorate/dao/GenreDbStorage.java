@@ -25,7 +25,7 @@ public class GenreDbStorage implements GenreStorage {
     private final static String SQL_QUERY_INSERT_GENRE = "INSERT INTO FILM_GENRE " +
             "(film_ID, genre_ID) VALUES (?, ?)";
     private final static String SQL_QUERY_DELETE_GENRE = "DELETE FROM FILM_GENRE " +
-            "WHERE film_ID = ? AND genre_ID = ?";
+            "WHERE film_ID = ?";
     private static final String SQL_QUERY_SELECT_GENRES = "SELECT " +
             "GENRE.GENRE_ID AS id, GENRE.GENRE_NAME AS name " +
             "FROM FILM_GENRE " +
@@ -61,8 +61,8 @@ public class GenreDbStorage implements GenreStorage {
     }
 
     @Override
-    public void deleteGenreToFilm(Long filmId, Long genreId) {
-        jdbcTemplate.update(SQL_QUERY_DELETE_GENRE, filmId, genreId);
+    public void deleteGenreToFilm(Long filmId) {
+        jdbcTemplate.update(SQL_QUERY_DELETE_GENRE, filmId);
     }
 
     @Override

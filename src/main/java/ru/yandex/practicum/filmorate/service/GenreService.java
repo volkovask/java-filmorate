@@ -39,13 +39,8 @@ public class GenreService {
         genreStorage.addGenreToFilm(filmId, genreId);
     }
 
-    public void deleteGenreToFilm(Long filmId, Long genreId) {
-        getGenreById(genreId);
-        genreStorage.deleteGenreToFilm(filmId, genreId);
-    }
-
-    public Collection<Genre> getGenresForFilm(Long filmId) {
-        return getGenresForFilm(filmId);
+    public void deleteGenreToFilm(Long filmId) {
+        genreStorage.deleteGenreToFilm(filmId);
     }
 
 }

@@ -2,12 +2,13 @@ package ru.yandex.practicum.filmorate.dao.utils;
 
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class FilmStorageUtils {
@@ -32,9 +33,15 @@ public class FilmStorageUtils {
                         .build())
                 .build();
         long id = film.getId();
-        film.setGenres(Set.copyOf(genreStorage.getGenresForFilm(id)));
+        film.setGenres(sortedGenre(genreStorage.getGenresForFilm(id)));
         return film;
     }
 
+    private static Set<Genre> sortedGenre(List<Genre> genres) {
+            Set<Genre> genresSort =
+                    new TreeSet<>(Comparator.comparing(Genre::getId));
+            genresSort.addAll(genres);
+            return genresSort;
+    }
 
 }

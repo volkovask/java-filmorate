@@ -46,10 +46,9 @@ public class FilmService {
                     + film.getId() + " ид был добавлен ранее.");
         } else {
             if (checkReleaseDate(film)) {
-                System.out.println("Get genres " + film.getGenres());
                 //film.setLikes(createLikesData(film));
                 film.setLikes(Set.of());
-                filmStorage.add(film);
+                filmStorage.add(sortGenreData(film));
                 createGenreData(film);
                 log.debug("Сохранен фильм " + film);
                 return film;
@@ -66,8 +65,7 @@ public class FilmService {
                 //film.setLikes(createLikesData(film));
                 film.setLikes(Set.of());
                 deleteGenreData(film);
-                System.out.println("Get genres " + film.getGenres());
-                filmStorage.update(film);
+                filmStorage.update(sortGenreData(film));
                 createGenreData(film);
                 log.debug("Обновлен фильм " + film);
                 return film;
@@ -124,19 +122,28 @@ public class FilmService {
             for (Genre genre : genres) {
                 genreService.addGenreToFilm(filmID, genre.getId());
             }
-        } /*else {
+        } else {
             film.setGenres(Set.of());
-        } */
+        }
     }
 
     private void deleteGenreData(Film film) {
         Set<Genre> genres = film.getGenres();
         Long filmID = film.getId();
         if (genres != null) {
-            for (Genre genre : genres) {
-                genreService.deleteGenreToFilm(filmID, genre.getId());
-            }
+                genreService.deleteGenreToFilm(filmID);
         }
+    }
+
+    private Film sortGenreData(Film film) {
+        Set<Genre> genres = film.getGenres();
+        if (genres != null) {
+           Set<Genre> genresSort =
+                    new TreeSet<>(Comparator.comparing(Genre::getId));
+            genresSort.addAll(genres);
+            film.setGenres(genresSort);
+        }
+        return film;
     }
 
     private boolean checkReleaseDate(Film film) {
