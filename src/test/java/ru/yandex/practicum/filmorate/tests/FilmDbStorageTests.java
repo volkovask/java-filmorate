@@ -19,6 +19,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 @SpringBootTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
@@ -65,6 +67,10 @@ public class FilmDbStorageTests {
 
         System.out.println("Найден фильм " + filmFind.get());
         System.out.println("Фильм ид " + filmFind.get().getId());
+
+        assertThat(filmFind).isPresent()
+                .hasValueSatisfying(film -> assertThat(film)
+                        .hasFieldOrPropertyWithValue("id", 1L));
 
     }
 

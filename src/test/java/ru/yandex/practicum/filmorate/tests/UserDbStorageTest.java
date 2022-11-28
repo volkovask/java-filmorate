@@ -14,6 +14,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
@@ -32,12 +33,16 @@ public class UserDbStorageTest {
         Optional<User> usersOne = Optional.ofNullable(userDbStorage.getUserById(1L));
         System.out.println("Найден пользователь " + usersOne.get());
 
-
+        assertThat(usersOne).isPresent()
+                .hasValueSatisfying(user -> assertThat(user)
+                        .hasFieldOrPropertyWithValue("id", 1L));
 
         Optional<User> usersTwo = Optional.ofNullable(userDbStorage.getUserById(2L));
         System.out.println("Найден пользователь " + usersTwo.get());
 
-        assertThat(usersOne.get().getId());
+        assertThat(usersTwo).isPresent()
+                .hasValueSatisfying(user -> assertThat(user)
+                        .hasFieldOrPropertyWithValue("id", 2L));
 
     }
 
