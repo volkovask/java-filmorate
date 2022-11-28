@@ -6,14 +6,18 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import ru.yandex.practicum.filmorate.dao.UserDbStorage;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 @SpringBootTest
 @AutoConfigureTestDatabase
+@ActiveProfiles("test")
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class UserDbStorageTest {
 
@@ -25,11 +29,16 @@ public class UserDbStorageTest {
     @DisplayName("Вывод пользователей из БД по ID.")
     @Sql({"classpath:table.sql", "classpath:data_table.sql"})
     void getUserByIdTest() {
-            Optional<User> usersOne = Optional.ofNullable(userDbStorage.getUserById(1L));
-            System.out.println("Найден пользователь " + usersOne.get());
+        Optional<User> usersOne = Optional.ofNullable(userDbStorage.getUserById(1L));
+        System.out.println("Найден пользователь " + usersOne.get());
+
+
 
         Optional<User> usersTwo = Optional.ofNullable(userDbStorage.getUserById(2L));
         System.out.println("Найден пользователь " + usersTwo.get());
+
+        assertThat(usersOne.get().getId());
+
     }
 
 }
