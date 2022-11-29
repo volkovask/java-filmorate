@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @Repository
@@ -67,13 +68,10 @@ public class GenreDbStorage implements GenreStorage {
 
     @Override
     public List<Genre> getGenresForFilm(Long filmId) {
-        List<Genre> genres = jdbcTemplate.query(SQL_QUERY_SELECT_GENRES,
-                GenreStorageUtils::makeGenre, filmId);
-        if (genres == null) {
-            throw new NotFoundException("Жанр отсутствует для фильма с таким " +
-                    filmId + " ид отсутствует.");
-        }
-        return genres;
+        Optional<List<Genre>> genres =
+                Optional.of(jdbcTemplate.query(SQL_QUERY_SELECT_GENRES,
+                        GenreStorageUtils::makeGenre, filmId));
+        return genres.get();
     }
 
 }

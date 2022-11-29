@@ -32,6 +32,4 @@ public class GenreController {
         return genreService.getGenreById(id);
     }
 
-
-
 }

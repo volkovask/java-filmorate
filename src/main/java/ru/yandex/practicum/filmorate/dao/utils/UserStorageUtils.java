@@ -8,9 +8,6 @@ import java.util.Set;
 
 public class UserStorageUtils {
 
-    private UserStorageUtils() {
-    }
-
     public static User makeUser(ResultSet resultSet, int rowNum) throws SQLException {
         return User.builder()
                 .id(resultSet.getLong("id"))

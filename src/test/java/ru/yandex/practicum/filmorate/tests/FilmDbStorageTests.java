@@ -15,6 +15,7 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -42,35 +43,98 @@ public class FilmDbStorageTests {
     @DisplayName("Тестирование RowMapper and ResultSet")
     @Sql({"classpath:table.sql", "classpath:data_table.sql"})
     void filmMapperTest() {
+
         List<Film> films = jdbcTemplate.query(SQL_QUERY_SELECT_ALL, new FilmMapper());
-        System.out.println("Найдено " + films.size() + " фильмов");
+
+        int countFilms = films.size();
+
+        assertThat(countFilms).isEqualTo(2);
+
     }
 
-
     @Test()
-    @DisplayName("Вывода всех фильмов из БД. Ожидание 2")
+    @DisplayName("Поиск всех фильмов в БД.")
     @Sql({"classpath:table.sql", "classpath:data_table.sql"})
     void getAllFilmsTest() {
+
         Optional<Collection<Film>> filmsTest = Optional.ofNullable(filmDbStorage.getAllFilms());
-        System.out.println("Найдено фильмов " + filmsTest.get());
-        System.out.println("Найдено " + filmsTest.get().size() + " фильма");
+        int countFilms = 0;
+
+        if (filmsTest.isPresent()) {
+            countFilms = filmsTest.get().size();
+        }
+
+        assertThat(countFilms).isEqualTo(2);
 
     }
 
     @Test
-    @DisplayName("Вывод фильма по ид.")
+    @DisplayName("Поиск фильма по ид.")
     @Sql({"classpath:table.sql", "classpath:data_table.sql"})
     void getFilmByIdTest() {
 
+        Long filmId = 1L;
         Optional<Film> filmFind =
-                Optional.ofNullable(filmDbStorage.getFilmById(1L));
-
-        System.out.println("Найден фильм " + filmFind.get());
-        System.out.println("Фильм ид " + filmFind.get().getId());
+                Optional.ofNullable(filmDbStorage.getFilmById(filmId));
 
         assertThat(filmFind).isPresent()
                 .hasValueSatisfying(film -> assertThat(film)
-                        .hasFieldOrPropertyWithValue("id", 1L));
+                        .hasFieldOrPropertyWithValue("id", filmId));
+
+    }
+
+    @Test()
+    @DisplayName("Добавление нового фильма в БД.")
+    @Sql({"classpath:table.sql", "classpath:data_table.sql"})
+    void addFilmTest() {
+
+        Film filmNew = new Film();
+        Mpa mpaNew = new Mpa();
+        mpaNew.setId(1L);
+        mpaNew.setName("G");
+        filmNew.setName("New_film_3");
+        filmNew.setReleaseDate(LocalDate.of(2001, 1, 1));
+        filmNew.setDescription("New film about nature");
+        filmNew.setDuration(90);
+        filmNew.setRate(4);
+        filmNew.setMpa(mpaNew);
+        filmDbStorage.add(filmNew);
+
+        Long filmId = filmNew.getId();
+        Optional<Film> filmFind =
+                Optional.ofNullable(filmDbStorage.getFilmById(filmId));
+
+        assertThat(filmFind).isPresent()
+                .hasValueSatisfying(film -> assertThat(film)
+                        .hasFieldOrPropertyWithValue("id", filmId));
+
+    }
+
+    @Test()
+    @DisplayName("Обновление фильма в БД.")
+    @Sql({"classpath:table.sql", "classpath:data_table.sql"})
+    void updateFilmTest() {
+
+        Film filmNew = new Film();
+        Mpa mpaNew = new Mpa();
+        mpaNew.setId(4L);
+        mpaNew.setName("R");
+        filmNew.setId(1L);
+        filmNew.setName("New_film_1_update");
+        filmNew.setReleaseDate(LocalDate.of(2001, 1, 1));
+        filmNew.setDescription("New film about nature and story");
+        filmNew.setDuration(90);
+        filmNew.setRate(4);
+        filmNew.setMpa(mpaNew);
+        filmDbStorage.update(filmNew);
+
+        Long filmId = filmNew.getId();
+        Optional<Film> filmFind =
+                Optional.ofNullable(filmDbStorage.getFilmById(filmId));
+
+        assertThat(filmFind).isPresent()
+                .hasValueSatisfying(film -> assertThat(film)
+                        .hasFieldOrPropertyWithValue("id", filmId));
 
     }
 

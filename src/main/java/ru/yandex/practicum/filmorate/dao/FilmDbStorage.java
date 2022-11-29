@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.util.Collection;
 import java.util.List;
@@ -72,15 +73,15 @@ public class FilmDbStorage implements FilmStorage {
     public Film add(Film film) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
-            PreparedStatement stm = connection.prepareStatement(
+            PreparedStatement preparedStatement = connection.prepareStatement(
                     SQL_QUERY_INSERT, new String[]{"id"});
-            stm.setString(1, film.getName());
-            stm.setDate(2, java.sql.Date.valueOf(film.getReleaseDate()));
-            stm.setString(3, film.getDescription());
-            stm.setInt(4, film.getDuration());
-            stm.setInt(5, film.getRate());
-            stm.setLong(6, film.getMpa().getId());
-            return stm;
+            preparedStatement.setString(1, film.getName());
+            preparedStatement.setDate(2, Date.valueOf(film.getReleaseDate()));
+            preparedStatement.setString(3, film.getDescription());
+            preparedStatement.setInt(4, film.getDuration());
+            preparedStatement.setInt(5, film.getRate());
+            preparedStatement.setLong(6, film.getMpa().getId());
+            return preparedStatement;
         }, keyHolder);
         long id = Objects.requireNonNull(keyHolder.getKey()).longValue();
         film.setId(id);

@@ -8,8 +8,8 @@ ALTER TABLE USERS ALTER COLUMN ID RESTART WITH 1;
 ALTER TABLE FILMS ALTER COLUMN ID RESTART WITH 1;
 
 MERGE INTO MPA KEY(mpa_ID) VALUES
-    (2, 'PG'),
     (1, 'G'),
+    (2, 'PG'),
     (3, 'PG-13'),
     (4, 'R'),
     (5, 'NC-17');

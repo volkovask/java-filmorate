@@ -6,9 +6,6 @@ import java.sql.SQLException;
 
 public class GenreStorageUtils {
 
-    private GenreStorageUtils() {
-    }
-
     public static Genre makeGenre(ResultSet resultSet, int rowNum) throws SQLException {
         Genre genre = new Genre();
         genre.setId(resultSet.getLong("genre_id"));
