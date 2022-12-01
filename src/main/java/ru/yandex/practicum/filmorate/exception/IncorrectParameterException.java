@@ -10,4 +10,5 @@ public class IncorrectParameterException extends RuntimeException {
     public String getParameter() {
         return parameter;
     }
+
 }

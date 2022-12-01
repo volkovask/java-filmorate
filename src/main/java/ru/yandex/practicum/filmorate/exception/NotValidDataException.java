@@ -7,4 +7,5 @@ public class NotValidDataException extends ValidationException {
     public NotValidDataException(String str) {
         super(str);
     }
+
 }

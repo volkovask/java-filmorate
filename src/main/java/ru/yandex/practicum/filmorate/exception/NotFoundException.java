@@ -7,4 +7,5 @@ public class NotFoundException extends ValidationException {
     public NotFoundException(String str) {
         super(str);
     }
+
 }

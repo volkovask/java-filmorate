@@ -7,4 +7,5 @@ public class AlreadyExistsException extends ValidationException {
     public AlreadyExistsException(String str) {
         super(str);
     }
+
 }
