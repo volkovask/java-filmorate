@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
+import org.springframework.data.annotation.Id;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -11,9 +11,12 @@ import java.util.Set;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
 
     private Set<Long> friends;
+    @Id
     private long id;
     @Email(message = "Неверно заполнен формат email.")
     private String email;

@@ -2,19 +2,17 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.AlreadyExistsException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.NotValidDataException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -22,12 +20,14 @@ public class FilmService {
 
     private final FilmStorage filmStorage;
     private final UserService userService;
-    private long generateIdFilm = 0;
+    private final GenreService genreService;
 
     @Autowired
-    public FilmService(FilmStorage filmStorage, UserService userService) {
+    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
+                       UserService userService, GenreService genreService) {
         this.filmStorage = filmStorage;
         this.userService = userService;
+        this.genreService = genreService;
     }
 
     public Collection<Film> findAll() {
@@ -46,10 +46,9 @@ public class FilmService {
                     + film.getId() + " ид был добавлен ранее.");
         } else {
             if (checkReleaseDate(film)) {
-                long filmId = getGenerateIdFilm();
                 film.setLikes(createLikesData(film));
-                film.setId(filmId);
-                filmStorage.add(filmId, film);
+                filmStorage.add(sortGenreData(film));
+                createGenreData(film);
                 log.debug("Сохранен фильм " + film);
                 return film;
             } else {
@@ -63,7 +62,9 @@ public class FilmService {
         if (filmStorage.isFindFilm(film)) {
             if (checkReleaseDate(film)) {
                 film.setLikes(createLikesData(film));
-                filmStorage.add(filmId, film);
+                deleteGenreData(film);
+                filmStorage.update(sortGenreData(film));
+                createGenreData(film);
                 log.debug("Обновлен фильм " + film);
                 return film;
             } else {
@@ -78,49 +79,24 @@ public class FilmService {
     public Film addLikesFilm(Long filmId, Long userId) {
         Film film = findFilmById(filmId);
         userService.findUserById(userId);
-        addLikes(filmId, film, userId);
+        film = filmStorage.addLikes(filmId, film, userId);
+        log.debug("Обновлен список лайков у фильма: {}", film);
         return film;
     }
 
     public Film deleteLikesFilm(Long filmId, Long userId) {
         Film film = findFilmById(filmId);
         userService.findUserById(userId);
-        deleteLikes(filmId, film, userId);
+        film = filmStorage.deleteLikes(filmId, film, userId);
+        log.debug("Обновлен список лайков после удаления у фильма: {} ", film);
         return film;
     }
 
     public Collection<Film> getFilmsByCountLikes(int count) {
-        return filmStorage
-                .getAllFilms()
-                .stream()
-                .sorted(Comparator.comparing(Film::getRates).reversed())
-                .limit(count)
-                .collect(Collectors.toList());
+        return filmStorage.getFilmsByCountLikes(count);
     }
 
-    private Film addLikes(Long id, Film film, Long userId) {
-        Set<Long> likes = film.getLikes();
-        likes.add(userId);
-        film.setLikes(likes);
-        film.setRates(likes.size());
-        filmStorage.add(id, film);
-        log.debug("Обновлен список лайков у фильма: {}", film);
-        return film;
-    }
-
-    private Film deleteLikes(Long id, Film film, Long userId) {
-        Set<Long> likes = film.getLikes();
-        if (likes.size() != 0) {
-            likes.remove(userId);
-            film.setLikes(likes);
-            film.setRates(likes.size());
-            filmStorage.add(id, film);
-            log.debug("Обновлен список лайков после удаления у фильма: {} ", film);
-        }
-        return film;
-    }
-
-    private Film findFilmById(Long id) {
+    public Film findFilmById(Long id) {
         Film film = filmStorage.getFilmById(id);
         if (film == null) {
             throw new NotFoundException("Фильм не найден: " + film);
@@ -137,13 +113,40 @@ public class FilmService {
         return likes;
     }
 
+    private void createGenreData(Film film) {
+        Set<Genre> genres = film.getGenres();
+        Long filmID = film.getId();
+        if (genres != null) {
+            for (Genre genre : genres) {
+                genreService.addGenreToFilm(filmID, genre.getId());
+            }
+        } else {
+            film.setGenres(Set.of());
+        }
+    }
+
+    private void deleteGenreData(Film film) {
+        Set<Genre> genres = film.getGenres();
+        Long filmID = film.getId();
+        if (genres != null) {
+                genreService.deleteGenreToFilm(filmID);
+        }
+    }
+
+    private Film sortGenreData(Film film) {
+        Set<Genre> genres = film.getGenres();
+        if (genres != null) {
+           Set<Genre> genresSort =
+                    new TreeSet<>(Comparator.comparing(Genre::getId));
+            genresSort.addAll(genres);
+            film.setGenres(genresSort);
+        }
+        return film;
+    }
+
     private boolean checkReleaseDate(Film film) {
         return film.getReleaseDate().isAfter(
                 LocalDate.of(1895, 12, 28));
-    }
-
-    private long getGenerateIdFilm() {
-        return ++this.generateIdFilm;
     }
 
 }
